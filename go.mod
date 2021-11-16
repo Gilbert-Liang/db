@@ -13,7 +13,6 @@ require (
 	github.com/golang/snappy v0.0.4
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/jwilder/encoding v0.0.0-20170811194829-b4e1701a28ef
-	github.com/mattn/go-isatty v0.0.14
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/mschoch/smat v0.2.0
 	github.com/peterh/liner v1.2.1

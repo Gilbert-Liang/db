@@ -5,7 +5,6 @@ import (
 	"io"
 	"time"
 
-	isatty "github.com/mattn/go-isatty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -32,11 +31,7 @@ func (c *Config) New(defaultOutput io.Writer) (*zap.Logger, error) {
 	// If the format is empty or auto, then set the format depending
 	// on whether or not a terminal is present.
 	if format == "" || format == "auto" {
-		if IsTerminal(w) {
-			format = "console"
-		} else {
-			format = "logfmt"
-		}
+		format = "console"
 	}
 
 	encoder, err := newEncoder(format)
@@ -73,16 +68,6 @@ func newEncoderConfig() zapcore.EncoderConfig {
 	}
 	config.LevelKey = "lvl"
 	return config
-}
-
-// IsTerminal checks if w is a file and whether it is an interactive terminal session.
-func IsTerminal(w io.Writer) bool {
-	if f, ok := w.(interface {
-		Fd() uintptr
-	}); ok {
-		return isatty.IsTerminal(f.Fd())
-	}
-	return false
 }
 
 const (
