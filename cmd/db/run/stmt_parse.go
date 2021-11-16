@@ -1,10 +1,11 @@
 package run
 
 import (
-	"db/cmd/db/internal"
-	models "db/model"
 	"errors"
 	"strings"
+
+	"db/cmd/db/internal"
+	"db/model"
 )
 
 func parseNextIdentifier(stmt string) (ident, remainder string) {
@@ -48,7 +49,7 @@ func parseDoubleQuotedIdentifier(stmt string) (string, string) {
 }
 
 func parsePoints(point string) ([]*internal.Point, error) {
-	mps, err := models.ParsePoints([]byte(point))
+	mps, err := model.ParsePoints([]byte(point))
 	if err != nil || len(mps) == 0 {
 		return nil, errors.Unwrap(err)
 	}

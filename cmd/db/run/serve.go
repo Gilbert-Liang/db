@@ -2,11 +2,12 @@ package run
 
 import (
 	"context"
-	"db/cmd/db/internal"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
+
+	"db/cmd/db/internal"
 
 	"github.com/gin-gonic/gin"
 )

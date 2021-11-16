@@ -55,6 +55,10 @@ func NewHTTPClient(addr string) (*Client, error) {
 	}, nil
 }
 
+func (c *Client) Addr() string {
+	return c.url.String()
+}
+
 func (c *Client) Ping(timeout time.Duration) (time.Duration, string, error) {
 	now := time.Now()
 

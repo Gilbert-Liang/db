@@ -2,13 +2,6 @@ package internal
 
 import (
 	"context"
-	"db/config"
-	"db/coordinator"
-	"db/logger"
-	"db/meta"
-	"db/query"
-	"db/server"
-	"db/tsdb"
 	"fmt"
 	"io"
 	"net"
@@ -20,6 +13,14 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	"db/config"
+	"db/coordinator"
+	"db/logger"
+	"db/meta"
+	"db/query"
+	"db/server"
+	"db/tsdb"
 
 	"github.com/felixge/fgprof"
 	"github.com/gin-gonic/gin"

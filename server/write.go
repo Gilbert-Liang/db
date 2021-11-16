@@ -13,7 +13,7 @@ import (
 	"db/config"
 	"db/coordinator"
 	"db/meta"
-	models "db/model"
+	"db/model"
 	"db/tsdb"
 
 	"go.uber.org/zap"
@@ -101,7 +101,7 @@ func (h *WriteAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Info("Write body received by Handler", zap.ByteString("body", buf.Bytes()))
 	}
 
-	points, parseError := models.ParsePointsWithPrecision(buf.Bytes(), time.Now().UTC(), precision)
+	points, parseError := model.ParsePointsWithPrecision(buf.Bytes(), time.Now().UTC(), precision)
 	// Not points parsed correctly so return the error now
 	if parseError != nil && len(points) == 0 {
 		if parseError.Error() == "EOF" {

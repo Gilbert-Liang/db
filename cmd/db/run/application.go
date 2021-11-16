@@ -3,9 +3,6 @@ package run
 import (
 	"bytes"
 	"context"
-	"db/cmd/db/internal"
-	models "db/model"
-	"db/parser/cnosql"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -22,6 +19,10 @@ import (
 	"syscall"
 	"text/tabwriter"
 	"time"
+
+	"db/cmd/db/internal"
+	"db/model"
+	"db/parser/cnosql"
 
 	"github.com/peterh/liner"
 )
@@ -74,6 +75,7 @@ func (a *Application) run() error {
 
 	if a.needConnect {
 		if err := a.connect(""); err != nil {
+			fmt.Printf("ERR: failed to connect to %s: %s", a.client.Addr(), err)
 			return err
 		}
 	}
@@ -358,7 +360,7 @@ func columnsEqual(prev, current []string) bool {
 	return reflect.DeepEqual(prev, current)
 }
 
-func headersEqual(prev, current models.Row) bool {
+func headersEqual(prev, current model.Row) bool {
 	if prev.Name != current.Name {
 		return false
 	}
@@ -457,11 +459,11 @@ func (c *Application) formatResultSeries(result internal.Result, separator strin
 
 func (c *Application) writeCSV(response *internal.Response, w io.Writer) {
 	cw := csv.NewWriter(w)
-	var previousHeaders models.Row
+	var previousHeaders model.Row
 	for _, result := range response.Results {
 		suppressHeaders := len(result.Series) > 0 && headersEqual(previousHeaders, result.Series[0])
 		if !suppressHeaders && len(result.Series) > 0 {
-			previousHeaders = models.Row{
+			previousHeaders = model.Row{
 				Name:    result.Series[0].Name,
 				Tags:    result.Series[0].Tags,
 				Columns: result.Series[0].Columns,
@@ -480,7 +482,7 @@ func (c *Application) writeColumns(response *internal.Response, w io.Writer) {
 	writer := new(tabwriter.Writer)
 	writer.Init(w, 0, 8, 1, ' ', 0)
 
-	var previousHeaders models.Row
+	var previousHeaders model.Row
 	for i, result := range response.Results {
 		// 1. 输出 Messages
 		for _, m := range result.Messages {
@@ -489,7 +491,7 @@ func (c *Application) writeColumns(response *internal.Response, w io.Writer) {
 		// Check to see if the headers are the same as the previous row.  If so, suppress them in the output
 		suppressHeaders := len(result.Series) > 0 && headersEqual(previousHeaders, result.Series[0])
 		if !suppressHeaders && len(result.Series) > 0 {
-			previousHeaders = models.Row{
+			previousHeaders = model.Row{
 				Name:    result.Series[0].Name,
 				Tags:    result.Series[0].Tags,
 				Columns: result.Series[0].Columns,

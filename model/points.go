@@ -1,4 +1,3 @@
-// Package models implements basic objects used throughout the TICK stack.
 package model
 
 import (
