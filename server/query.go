@@ -69,7 +69,6 @@ func (h *QueryAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	closeCh := make(chan struct{})
-	defer close(closeCh)
 	doneCh := make(chan struct{})
 	defer close(doneCh)
 	go func() {

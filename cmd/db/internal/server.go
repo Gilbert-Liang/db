@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -242,7 +243,13 @@ func AccessLogMiddleware() gin.HandlerFunc {
 			r := recover()
 			switch {
 			case r != nil:
-				fmt.Printf("ERR: %s\n", requestInfo)
+				b := make([]byte, 1024)
+				written := runtime.Stack(b, false)
+				if written == 1024 {
+					fmt.Printf("ERR: %s\nStack:%s...\n", requestInfo, string(b))
+				} else {
+					fmt.Printf("ERR: %s\nStack:%s\n", requestInfo, string(b))
+				}
 			case len(c.Errors) > 0:
 				fmt.Printf("ERR: %s : '%s'\n", requestInfo, c.Errors[0].Err)
 			default:

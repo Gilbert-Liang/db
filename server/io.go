@@ -5,7 +5,6 @@ import (
 	"db/query"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"math"
 	"net/http"
@@ -136,16 +135,6 @@ func (w *responseWriter) Flush() {
 
 func writeHeader(w http.ResponseWriter, code int) {
 	w.WriteHeader(code)
-}
-
-func writeErrorUnauthorized(w http.ResponseWriter, errMsg string, realm string) {
-	w.Header().Set("WWW-Authenticate", fmt.Sprintf("Basic realm=\"%s\"", realm))
-	w.Header().Add(constant.HeaderContentType, constant.ContentTypeJSON)
-	writeHeader(w, http.StatusUnauthorized)
-
-	response := Response{Err: errors.New(errMsg)}
-	b, _ := json.Marshal(response)
-	_, _ = w.Write(b)
 }
 
 func writeError(w http.ResponseWriter, errMsg string) {
