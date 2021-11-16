@@ -5,7 +5,6 @@ import (
 	"io"
 	"time"
 
-	zaplogfmt "github.com/jsternberg/zap-logfmt"
 	isatty "github.com/mattn/go-isatty"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -58,8 +57,6 @@ func newEncoder(format string) (zapcore.Encoder, error) {
 		return zapcore.NewJSONEncoder(config), nil
 	case "console":
 		return zapcore.NewConsoleEncoder(config), nil
-	case "logfmt":
-		return zaplogfmt.NewEncoder(config), nil
 	default:
 		return nil, fmt.Errorf("unknown logging format: %s", format)
 	}

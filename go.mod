@@ -4,26 +4,20 @@ go 1.16
 
 require (
 	github.com/cespare/xxhash v1.1.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgryski/go-bitstream v0.0.0-20180413035011-3522498ce2c8
-	github.com/felixge/fgprof v0.9.1
 	github.com/gin-gonic/gin v1.7.4
 	github.com/glycerine/go-unsnap-stream v0.0.0-20210130063903-47dfef350d96
 	github.com/glycerine/goconvey v0.0.0-20190410193231-58a59202ab31 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/snappy v0.0.4
-	github.com/google/go-cmp v0.5.5
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/jsternberg/zap-logfmt v1.2.0
 	github.com/jwilder/encoding v0.0.0-20170811194829-b4e1701a28ef
 	github.com/mattn/go-isatty v0.0.14
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/mschoch/smat v0.2.0
 	github.com/peterh/liner v1.2.1
-	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cobra v1.2.1
-	github.com/stretchr/testify v1.7.0
 	github.com/tinylib/msgp v1.1.6
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/willf/bitset v1.1.3

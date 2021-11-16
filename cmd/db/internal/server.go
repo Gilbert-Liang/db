@@ -22,7 +22,6 @@ import (
 	"db/server"
 	"db/tsdb"
 
-	"github.com/felixge/fgprof"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -66,10 +65,6 @@ func (s *Server) Init() error {
 		s.gin.Use(AccessLogMiddleware())
 	}
 	s.gin.Use(CorsMiddleware())
-
-	if s.DebugMode {
-		s.gin.GET("/debug/pprof", gin.WrapH(fgprof.Handler()))
-	}
 
 	if err := s.initDependencies(); err != nil {
 		return err
