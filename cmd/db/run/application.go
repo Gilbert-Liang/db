@@ -204,7 +204,7 @@ func (a *Application) connect(cmd string) error {
 			_url.Host = net.JoinHostPort(host, strconv.Itoa(port))
 		}
 	}
-	_url.Path = "/cnosdb"
+	_url.Path = "/db"
 	newAddr := _url.String()
 
 	cli1, err := internal.NewHTTPClient(newAddr)
@@ -308,6 +308,7 @@ func (a *Application) requestQuery(query string) error {
 		Command:    query,
 		Database:   a.database,
 		TimeToLive: a.timeToLive,
+		Precision:  a.precision,
 	}
 
 	response, err := a.client.Query(req)

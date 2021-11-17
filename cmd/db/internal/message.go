@@ -1,12 +1,8 @@
 package internal
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
-	"strings"
 	"time"
 
 	"db/model"
@@ -154,46 +150,4 @@ func (r *duplexReader) Read(p []byte) (n int, err error) {
 // Close closes the response.
 func (r *duplexReader) Close() error {
 	return r.r.Close()
-}
-
-// ChunkedResponse represents a response from the server that
-// uses chunking to stream the output.
-type ChunkedResponse struct {
-	dec    *json.Decoder
-	duplex *duplexReader
-	buf    bytes.Buffer
-}
-
-// NewChunkedResponse reads a stream and produces responses from the stream.
-func NewChunkedResponse(r io.Reader) *ChunkedResponse {
-	rc, ok := r.(io.ReadCloser)
-	if !ok {
-		rc = ioutil.NopCloser(r)
-	}
-	resp := &ChunkedResponse{}
-	resp.duplex = &duplexReader{r: rc, w: &resp.buf}
-	resp.dec = json.NewDecoder(resp.duplex)
-	resp.dec.UseNumber()
-	return resp
-}
-
-// NextResponse reads the next line of the stream and returns a response.
-func (r *ChunkedResponse) NextResponse() (*Response, error) {
-	var response Response
-	if err := r.dec.Decode(&response); err != nil {
-		if err == io.EOF {
-			return nil, err
-		}
-		// 解析失败，通常是服务端出现异常，返回了该异常信息。此时需要确保剩余的异常信息被读取
-		_, _ = io.Copy(ioutil.Discard, r.duplex)
-		return nil, errors.New(strings.TrimSpace(r.buf.String()))
-	}
-
-	r.buf.Reset()
-	return &response, nil
-}
-
-// Close closes the response.
-func (r *ChunkedResponse) Close() error {
-	return r.duplex.Close()
 }

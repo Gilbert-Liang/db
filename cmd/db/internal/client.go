@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strconv"
 	"time"
 )
 
@@ -27,8 +26,6 @@ type Query struct {
 	Database   string
 	TimeToLive string
 	Precision  string
-	Chunked    bool
-	ChunkSize  int
 	Parameters map[string]interface{}
 }
 
@@ -137,14 +134,6 @@ func (c *Client) Query(q *Query) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	params := req.URL.Query()
-	if q.Chunked {
-		params.Set("chunked", "true")
-		if q.ChunkSize > 0 {
-			params.Set("chunk_size", strconv.Itoa(q.ChunkSize))
-		}
-		req.URL.RawQuery = params.Encode()
-	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -156,41 +145,18 @@ func (c *Client) Query(q *Query) (*Response, error) {
 	}
 
 	var response Response
-	if q.Chunked {
-		cr := NewChunkedResponse(resp.Body)
-		for {
-			r, err := cr.NextResponse()
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				// If we got an error while decoding the response, send that back.
-				return nil, err
-			}
 
-			if r == nil {
-				break
-			}
+	dec := json.NewDecoder(resp.Body)
+	dec.UseNumber()
+	decErr := dec.Decode(&response)
 
-			response.Results = append(response.Results, r.Results...)
-			if r.Err != "" {
-				response.Err = r.Err
-				break
-			}
-		}
-	} else {
-		dec := json.NewDecoder(resp.Body)
-		dec.UseNumber()
-		decErr := dec.Decode(&response)
-
-		// 若错误类型为 EOF ，忽视该错误
-		if decErr != nil && decErr.Error() == "EOF" && resp.StatusCode != http.StatusOK {
-			decErr = nil
-		}
-		// 对于其他错误类型，生成一个 error 并返回
-		if decErr != nil {
-			return nil, fmt.Errorf("unable to decode json: received status code %d err: %s", resp.StatusCode, decErr)
-		}
+	// 若错误类型为 EOF ，忽视该错误
+	if decErr != nil && decErr.Error() == "EOF" && resp.StatusCode != http.StatusOK {
+		decErr = nil
+	}
+	// 对于其他错误类型，生成一个 error 并返回
+	if decErr != nil {
+		return nil, fmt.Errorf("unable to decode json: received status code %d err: %s", resp.StatusCode, decErr)
 	}
 
 	// 若服务端未返回错误信息，但返回状态不是 HTTP Status OK ，则生成一个 error 并返回

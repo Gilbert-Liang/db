@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"db/config"
+	"db/controller"
 	"db/coordinator"
 	"db/logger"
 	"db/meta"
 	"db/query"
-	"db/server"
 	"db/tsdb"
 
 	"github.com/gin-gonic/gin"
@@ -73,7 +73,7 @@ func (s *Server) Init() error {
 		return err
 	}
 
-	rg := s.gin.Group("/cnosdb")
+	rg := s.gin.Group("/db")
 	s.registerPingAPI(rg)
 	s.registerQueryAPI(rg)
 	s.registerWriteAPI(rg)
@@ -160,12 +160,12 @@ func (s *Server) runDependencies() error {
 }
 
 func (s *Server) registerPingAPI(g *gin.RouterGroup) {
-	g.GET("/ping", gin.WrapF(server.Ping))
+	g.GET("/ping", gin.WrapF(controller.Ping))
 }
 
 func (s *Server) registerQueryAPI(g *gin.RouterGroup) {
 	c := &config.HTTP{}
-	api := &server.QueryAPI{
+	api := &controller.QueryAPI{
 		Config:        c,
 		QueryExecutor: s.queryExecutor,
 	}
@@ -177,7 +177,7 @@ func (s *Server) registerQueryAPI(g *gin.RouterGroup) {
 
 func (s *Server) registerWriteAPI(g *gin.RouterGroup) {
 	c := &config.HTTP{}
-	api := &server.WriteAPI{
+	api := &controller.WriteAPI{
 		Config:       c,
 		MetaClient:   s.metaClient,
 		PointsWriter: s.pointsWriter,

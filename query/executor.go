@@ -69,17 +69,8 @@ type ExecutionOptions struct {
 	// The time-to-live the query is running against.
 	TimeToLive string
 
-	// u, ms, s, m, h
-	Epoch string
-
-	// The requested maximum number of points to return in each result.
-	ChunkSize int
-
 	// If this query is being executed in a read-only context.
 	ReadOnly bool
-
-	// Node to execute on.
-	NodeID uint64
 
 	// Quiet suppresses non-essential output from the query executor.
 	Quiet bool

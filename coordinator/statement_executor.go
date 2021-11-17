@@ -19,6 +19,10 @@ import (
 	"db/tsdb"
 )
 
+const (
+	DefaultChunkSize = 10000
+)
+
 // ErrDatabaseNameRequired is returned when executing statements that require a database,
 // when a database has not been provided.
 var ErrDatabaseNameRequired = errors.New("database name required")
@@ -368,7 +372,7 @@ func (e *StatementExecutor) executeExplainAnalyzeStatement(ectx *query.Execution
 	iterTime := time.Since(start)
 
 	// Generate a row emitter from the iterator set.
-	em := query.NewEmitter(cur, ectx.ChunkSize)
+	em := query.NewEmitter(cur, DefaultChunkSize)
 
 	// Emit rows to the results channel.
 	var writeN int64
@@ -425,7 +429,7 @@ func (e *StatementExecutor) executeSelectStatement(stmt *cnosql.SelectStatement,
 	}
 
 	// Generate a row emitter from the iterator set.
-	em := query.NewEmitter(cur, ctx.ChunkSize)
+	em := query.NewEmitter(cur, DefaultChunkSize)
 	defer em.Close()
 
 	// Emit rows to the results channel.
@@ -597,7 +601,7 @@ func (e *StatementExecutor) executeShowShardsStatement(stmt *cnosql.ShowShardsSt
 
 	rows := []*model.Row{}
 	for _, di := range dis {
-		row := &model.Row{Columns: []string{"id", "database", "retention_policy", "shard_group", "start_time", "end_time", "expiry_time", "owners"}, Name: di.Name}
+		row := &model.Row{Columns: []string{"id", "database", "ttl", "shard_group", "start_time", "end_time", "expiry_time", "owners"}, Name: di.Name}
 		for _, rpi := range di.TimeToLives {
 			for _, sgi := range rpi.Regions {
 				// Shards associated with deleted shard groups are effectively deleted.
@@ -633,7 +637,7 @@ func (e *StatementExecutor) executeShowShardsStatement(stmt *cnosql.ShowShardsSt
 func (e *StatementExecutor) executeShowRegionsStatement(stmt *cnosql.ShowRegionsStatement) (model.Rows, error) {
 	dis := e.MetaClient.Databases()
 
-	row := &model.Row{Columns: []string{"id", "database", "retention_policy", "start_time", "end_time", "expiry_time"}, Name: "shard groups"}
+	row := &model.Row{Columns: []string{"id", "database", "ttl", "start_time", "end_time", "expiry_time"}, Name: "shard groups"}
 	for _, di := range dis {
 		for _, rpi := range di.TimeToLives {
 			for _, sgi := range rpi.Regions {
@@ -990,7 +994,7 @@ func convertRowToPoints(metricName string, row *model.Row) ([]model.Point, error
 	return points, nil
 }
 
-// NormalizeStatement adds a default database and policy to the metrics in statement.
+// NormalizeStatement adds a default database and time-to-live to the metrics in statement.
 // Parameter defaultTimeToLive can be "".
 func (e *StatementExecutor) NormalizeStatement(stmt cnosql.Statement, defaultDatabase, defaultTimeToLive string) (err error) {
 	cnosql.WalkFunc(stmt, func(node cnosql.Node) {

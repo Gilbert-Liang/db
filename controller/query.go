@@ -1,4 +1,4 @@
-package server
+package controller
 
 import (
 	"db/config"
@@ -7,12 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
-)
-
-const (
-	DefaultChunkSize = 10000
+	"time"
 )
 
 type QueryAPI struct {
@@ -51,20 +47,9 @@ func (h *QueryAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Request param "chunked"
-	chunked := r.FormValue("chunked") == "true"
-	chunkSize := DefaultChunkSize
-	if chunked {
-		if n, err := strconv.ParseInt(r.FormValue("chunk_size"), 10, 64); err == nil && int(n) > 0 {
-			chunkSize = int(n)
-		}
-	}
-
 	opts := query.ExecutionOptions{
 		Database:   db,
 		TimeToLive: ttl,
-		Epoch:      epoch,
-		ChunkSize:  chunkSize,
 		ReadOnly:   r.Method == "GET",
 	}
 
@@ -93,11 +78,9 @@ func (h *QueryAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Write out result immediately if chunked.
-		if chunked {
-			_, _ = rw.WriteResponse(Response{Results: []*query.Result{ret}})
-			w.(http.Flusher).Flush()
-			continue
+		// if requested, convert result timestamps to epoch
+		if epoch != "" {
+			convertToEpoch(ret, epoch)
 		}
 
 		l := len(resp.Results)
@@ -136,8 +119,31 @@ func (h *QueryAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// If it's not chunked we buffered everything in memory, so write it out
-	if !chunked {
-		_, _ = rw.WriteResponse(resp)
+	_, _ = rw.WriteResponse(resp)
+}
+
+// convertToEpoch converts result timestamps from time.Time to the specified epoch.
+func convertToEpoch(r *query.Result, epoch string) {
+	divisor := int64(1)
+
+	switch epoch {
+	case "u":
+		divisor = int64(time.Microsecond)
+	case "ms":
+		divisor = int64(time.Millisecond)
+	case "s":
+		divisor = int64(time.Second)
+	case "m":
+		divisor = int64(time.Minute)
+	case "h":
+		divisor = int64(time.Hour)
+	}
+
+	for _, s := range r.Series {
+		for _, v := range s.Values {
+			if ts, ok := v[0].(time.Time); ok {
+				v[0] = ts.UnixNano() / divisor
+			}
+		}
 	}
 }
